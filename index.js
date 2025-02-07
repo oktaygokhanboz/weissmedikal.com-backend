@@ -66,24 +66,24 @@ app.get("/api/products", async (req, res) => {
   try {
     if (!categoryQuery && !branchQuery) {
       const result = await db.query(
-        "SELECT id, name, category, url_name FROM products ORDER BY name ASC"
+        "SELECT id, name, name_tr, category, url_name FROM products ORDER BY name ASC"
       );
       res.status(200).json(result.rows);
     } else if (categoryQuery && !branchQuery) {
       const result = await db.query(
-        "SELECT id, name, category, url_name FROM products WHERE category = ANY($1) ORDER BY name ASC",
+        "SELECT id, name, name_tr, category, url_name FROM products WHERE category = ANY($1) ORDER BY name ASC",
         [categories]
       );
       res.status(200).json(result.rows);
     } else if (!categoryQuery && branchQuery) {
       const result = await db.query(
-        "SELECT id, name, category, url_name FROM products WHERE branches && $1 ORDER BY name ASC",
+        "SELECT id, name, name_tr, category, url_name FROM products WHERE branches && $1 ORDER BY name ASC",
         [branches]
       );
       res.status(200).json(result.rows);
     } else {
       const result = await db.query(
-        "SELECT id, name, category, url_name FROM products WHERE category = ANY($1) AND branches && $2 ORDER BY name ASC",
+        "SELECT id, name, name_tr, category, url_name FROM products WHERE category = ANY($1) AND branches && $2 ORDER BY name ASC",
         [categories, branches]
       );
       res.status(200).json(result.rows);
