@@ -30,20 +30,25 @@ app.get("/api/product-names", async (req, res) => {
   }
 });
 
-app.get("/api/categories", async (req, res) => {
+app.get("/api/:lang/categories", async (req, res) => {
+  const { lang } = req.params;
+  const column = lang === "en" ? "category" : "category_tr";
   try {
     const result = await db.query("SELECT * FROM categories ORDER BY id ASC");
-    const categories = result.rows.map((c) => c.category);
+    console.log(result.rows);
+    const categories = result.rows.map((c) => c[column]);
     res.status(200).json(categories);
   } catch (err) {
     console.log(err);
   }
 });
 
-app.get("/api/branches", async (req, res) => {
+app.get("/api/:lang/branches", async (req, res) => {
+  const { lang } = req.params;
+  const column = lang === "en" ? "branch" : "branch_tr";
   try {
     const result = await db.query("SELECT * FROM branches ORDER BY id ASC");
-    const branches = result.rows.map((b) => b.branch);
+    const branches = result.rows.map((b) => b[column]);
     res.status(200).json(branches);
   } catch (err) {
     console.log(err);
@@ -105,5 +110,3 @@ app.get("/api/product/:item", async (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}/api/products`);
 });
-
-// SELECT id, name, category, url_name FROM products WHERE category = ANY($1) AND branches && $2 ORDER BY name ASC
