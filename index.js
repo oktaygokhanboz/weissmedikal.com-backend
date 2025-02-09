@@ -1,21 +1,23 @@
 import express from "express";
 import cors from "cors";
 import pg from "pg";
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
-const port = 3000 || 8080;
+const port = process.env.PORT || 3000;
 
 const db = new pg.Client({
-  user: "postgres",
-  host: "localhost",
-  database: "weissmedical",
-  password: "Du86vp5SJ8XQ",
-  port: 5432,
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
 });
 db.connect();
 
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: process.env.BASE_URL || "http://localhost:5173",
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
@@ -35,7 +37,6 @@ app.get("/api/:lang/categories", async (req, res) => {
   const column = lang === "en" ? "category" : "category_tr";
   try {
     const result = await db.query("SELECT * FROM categories ORDER BY id ASC");
-    console.log(result.rows);
     const categories = result.rows.map((c) => c[column]);
     res.status(200).json(categories);
   } catch (err) {
