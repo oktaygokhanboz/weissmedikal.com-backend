@@ -2,25 +2,56 @@ import express from "express";
 import cors from "cors";
 import pg from "pg";
 import dotenv from "dotenv";
+import nodemailer, { createTransport } from "nodemailer";
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(cors());
+app.use(express.json());
+
 const db = new pg.Client({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
-  password: process.env.DB_PASS,
+  password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
 });
 db.connect();
 
-const corsOptions = {
-  origin: process.env.BASE_URL || "http://localhost:5173",
-  optionsSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
+const transporter = createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.APP_PASS,
+  },
+});
+
+app.post("/api/offer-form", async (req, res) => {
+  try {
+    const newInput = req.body;
+    let emailContent = "<h3>Teklif Al Formu Yeni Kayıt</h3>";
+    for (const key in newInput) {
+      emailContent += `<p><strong>${
+        key.charAt(0).toUpperCase() + key.slice(1)
+      }</strong>: ${newInput[key]}</p>`;
+    }
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: "oktaygokhanboz@outlook.com",
+      subject: "Yeni Kayıt: Teklif Al Formu",
+      html: emailContent,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.send({ message: true });
+  } catch (err) {
+    res.status(500).send({ message: false });
+  }
+});
 
 app.get("/api/product-names", async (req, res) => {
   try {
