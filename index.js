@@ -23,8 +23,8 @@ db.connect();
 const transporter = createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.APP_PASS,
+    user: process.env.FROM_EMAIL_USER,
+    pass: process.env.FROM_EMAIL_PASS,
   },
 });
 
@@ -39,8 +39,8 @@ app.post("/api/offer-form", async (req, res) => {
     }
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: "oktaygokhanboz@outlook.com",
+      from: process.env.FROM_EMAIL_USER,
+      to: process.env.TO_EMAIL_USER,
       subject: "Yeni Kayıt: Teklif Al Formu",
       html: emailContent,
     };
