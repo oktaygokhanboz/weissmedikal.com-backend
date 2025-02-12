@@ -31,7 +31,7 @@ const transporter = createTransport({
 app.post("/api/offer-form", async (req, res) => {
   try {
     const newInput = req.body;
-    let emailContent = "<h3>Teklif Al Formu Yeni Kayıt</h3>";
+    let emailContent = "<h3>Yeni Kayıt: Teklif Al Formu</h3>";
     for (const key in newInput) {
       emailContent += `<p><strong>${
         key.charAt(0).toUpperCase() + key.slice(1)
@@ -55,9 +55,12 @@ app.post("/api/offer-form", async (req, res) => {
 
 app.get("/api/product-names", async (req, res) => {
   try {
-    const result = await db.query("SELECT name FROM products ORDER BY id ASC");
+    const result = await db.query(
+      "SELECT name, name_tr FROM products ORDER BY id ASC"
+    );
     const names = result.rows.map((p) => p.name);
-    res.status(200).json(names);
+    const names_tr = result.rows.map((p) => p.name_tr);
+    res.status(200).json({ names: names, names_tr: names_tr });
   } catch (err) {
     console.log(err);
   }
@@ -87,45 +90,32 @@ app.get("/api/:lang/branches", async (req, res) => {
   }
 });
 
-app.get("/api/products", async (req, res) => {
-  const { c: categoryQuery, b: branchQuery } = req.query;
-
+app.get("/api/:branch", async (req, res) => {
+  let { branch } = req.params;
+  branch = branch.replaceAll("-", " ");
+  const { c: categoryQuery } = req.query;
   const categories = Array.isArray(categoryQuery)
     ? categoryQuery
     : [categoryQuery];
-  const branches = Array.isArray(branchQuery) ? branchQuery : [branchQuery];
 
   try {
-    if (!categoryQuery && !branchQuery) {
+    if (!categoryQuery) {
       const result = await db.query(
-        "SELECT id, name, name_tr, category, url_name FROM products ORDER BY name ASC"
-      );
-      res.status(200).json(result.rows);
-    } else if (categoryQuery && !branchQuery) {
-      const result = await db.query(
-        "SELECT id, name, name_tr, category, url_name FROM products WHERE category = ANY($1) ORDER BY name ASC",
-        [categories]
-      );
-      res.status(200).json(result.rows);
-    } else if (!categoryQuery && branchQuery) {
-      const result = await db.query(
-        "SELECT id, name, name_tr, category, url_name FROM products WHERE branches && $1 ORDER BY name ASC",
-        [branches]
+        "SELECT name, name_tr, category, url_name FROM products WHERE $1 ILIKE ANY(branches) ORDER BY category ASC",
+        [branch]
       );
       res.status(200).json(result.rows);
     } else {
       const result = await db.query(
-        "SELECT id, name, name_tr, category, url_name FROM products WHERE category = ANY($1) AND branches && $2 ORDER BY name ASC",
-        [categories, branches]
+        "SELECT name, name_tr, category, url_name FROM products WHERE $1 ILIKE ANY(branches) AND category = ANY($2) ORDER BY category ASC",
+        [branch, categories]
       );
       res.status(200).json(result.rows);
     }
   } catch (err) {
-    res.status(500).json("Something happened in server");
     console.log(err);
   }
 });
-
 app.get("/api/product/:item", async (req, res) => {
   const itemUrlName = req.params.item;
   try {
@@ -140,5 +130,5 @@ app.get("/api/product/:item", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}/api/products`);
+  console.log(`Server is running on http://localhost:${port}/api/`);
 });
