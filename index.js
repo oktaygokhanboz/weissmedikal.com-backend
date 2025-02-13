@@ -6,9 +6,14 @@ import nodemailer from "nodemailer";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["https://weissmedikal.com"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 const db = new pg.Client({
@@ -61,6 +66,17 @@ app.get("/api/product-names", async (req, res) => {
     const names = result.rows.map((p) => p.name);
     const names_tr = result.rows.map((p) => p.name_tr);
     res.status(200).json({ names: names, names_tr: names_tr });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.get("/api/url-names", async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT url_name FROM products ORDER BY id ASC"
+    );
+    res.status(200).json(result.rows);
   } catch (err) {
     console.log(err);
   }
@@ -129,6 +145,6 @@ app.get("/api/product/:item", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}/api/`);
+app.listen(process.env.PORT, () => {
+  console.log(`Server is running on port ${process.env.PORT}`);
 });
