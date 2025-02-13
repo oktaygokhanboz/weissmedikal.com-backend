@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import pg from "pg";
 import dotenv from "dotenv";
-import nodemailer, { createTransport } from "nodemailer";
+import nodemailer from "nodemailer";
 dotenv.config();
 
 const app = express();
@@ -20,8 +20,8 @@ const db = new pg.Client({
 });
 db.connect();
 
-const transporter = createTransport({
-  service: "gmail",
+const transporter = nodemailer.createTransport({
+  service: "Yandex",
   auth: {
     user: process.env.FROM_EMAIL_USER,
     pass: process.env.FROM_EMAIL_PASS,
@@ -101,13 +101,13 @@ app.get("/api/:branch", async (req, res) => {
   try {
     if (!categoryQuery) {
       const result = await db.query(
-        "SELECT name, name_tr, category, url_name FROM products WHERE $1 ILIKE ANY(branches) ORDER BY category ASC",
+        "SELECT name, name_tr, category, url_name FROM products WHERE $1 ILIKE ANY(branches) ORDER BY category DESC",
         [branch]
       );
       res.status(200).json(result.rows);
     } else {
       const result = await db.query(
-        "SELECT name, name_tr, category, url_name FROM products WHERE $1 ILIKE ANY(branches) AND category = ANY($2) ORDER BY category ASC",
+        "SELECT name, name_tr, category, url_name FROM products WHERE $1 ILIKE ANY(branches) AND category = ANY($2) ORDER BY category DESC",
         [branch, categories]
       );
       res.status(200).json(result.rows);
