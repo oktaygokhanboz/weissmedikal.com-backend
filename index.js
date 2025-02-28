@@ -9,7 +9,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["https://weissmedikal.com"],
+    origin: ["https://weissmedikal.com", "http://localhost:5173"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -106,32 +106,21 @@ app.get("/api/:lang/branches", async (req, res) => {
   }
 });
 
-app.get("/api/:branch", async (req, res) => {
+app.get("/api/products/:branch", async (req, res) => {
   let { branch } = req.params;
   branch = branch.replaceAll("-", " ");
-  const { c: categoryQuery } = req.query;
-  const categories = Array.isArray(categoryQuery)
-    ? categoryQuery
-    : [categoryQuery];
 
   try {
-    if (!categoryQuery) {
-      const result = await db.query(
-        "SELECT name, name_tr, category, url_name FROM products WHERE $1 ILIKE ANY(branches) ORDER BY category DESC",
-        [branch]
-      );
-      res.status(200).json(result.rows);
-    } else {
-      const result = await db.query(
-        "SELECT name, name_tr, category, url_name FROM products WHERE $1 ILIKE ANY(branches) AND category = ANY($2) ORDER BY category DESC",
-        [branch, categories]
-      );
-      res.status(200).json(result.rows);
-    }
+    const result = await db.query(
+      "SELECT name, name_tr, category, url_name FROM products WHERE $1 ILIKE ANY(branches) ORDER BY category DESC",
+      [branch]
+    );
+    res.status(200).json(result.rows);
   } catch (err) {
     console.log(err);
   }
 });
+
 app.get("/api/product/:item", async (req, res) => {
   const itemUrlName = req.params.item;
   try {
