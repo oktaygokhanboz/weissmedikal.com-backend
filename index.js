@@ -112,7 +112,7 @@ app.get("/api/products/:branch", async (req, res) => {
 
   try {
     const result = await db.query(
-      "SELECT name, name_tr, category, url_name FROM products WHERE $1 ILIKE ANY(branches) ORDER BY category DESC",
+      "SELECT id, name, name_tr, category, url_name FROM products WHERE $1 ILIKE ANY(branches) ORDER BY category DESC",
       [branch]
     );
     res.status(200).json(result.rows);
