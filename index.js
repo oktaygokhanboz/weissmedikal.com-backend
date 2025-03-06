@@ -164,6 +164,15 @@ app.get("/api/product/:item", async (req, res) => {
   }
 });
 
+app.get("/api/news", async (req, res) => {
+  try {
+    const result = await db.query("SELECT * FROM news");
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });
