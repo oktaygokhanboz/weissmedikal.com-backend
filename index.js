@@ -58,14 +58,44 @@ app.post("/api/offer-form", async (req, res) => {
   }
 });
 
+app.post("/api/technical-form", async (req, res) => {
+  try {
+    const newInput = req.body;
+    let emailContent = "<h3>Yeni Kayıt: Teknik Servis Formu</h3>";
+    for (const key in newInput) {
+      emailContent += `<p><strong>${
+        key.charAt(0).toUpperCase() + key.slice(1)
+      }</strong>: ${newInput[key]}</p>`;
+    }
+
+    const mailOptions = {
+      from: process.env.FROM_EMAIL_USER,
+      to: process.env.TO_EMAIL_USER,
+      subject: "Yeni Kayıt: Teknik Servis Formu",
+      html: emailContent,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.send({ message: true });
+  } catch (err) {
+    res.status(500).send({ message: false });
+  }
+});
+
 app.get("/api/product-names", async (req, res) => {
   try {
     const result = await db.query(
-      "SELECT name, name_tr FROM products ORDER BY id ASC"
+      "SELECT name, name_tr, url_name FROM products ORDER BY id ASC"
     );
     const names = result.rows.map((p) => p.name);
     const names_tr = result.rows.map((p) => p.name_tr);
-    res.status(200).json({ names: names, names_tr: names_tr });
+    const url_name = result.rows.map((p) => p.url_name);
+    res.status(200).json({
+      names: names,
+      names_tr: names_tr,
+      url_name: url_name,
+    });
   } catch (err) {
     console.log(err);
   }
