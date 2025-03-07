@@ -166,8 +166,19 @@ app.get("/api/product/:item", async (req, res) => {
 
 app.get("/api/news", async (req, res) => {
   try {
-    const result = await db.query("SELECT * FROM news");
+    const result = await db.query("SELECT * FROM news ORDER BY id DESC");
     res.status(200).json(result.rows);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.get("/api/news/:id", async (req, res) => {
+  const newsId = req.params.id;
+
+  try {
+    const result = await db.query("SELECT * FROM news WHERE id=$1", [newsId]);
+    res.status(200).json(result.rows[0]);
   } catch (err) {
     console.log(err);
   }
